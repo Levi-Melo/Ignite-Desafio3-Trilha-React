@@ -4,13 +4,9 @@ export default function Header() {
     <header className={styles.headerContainer}>
       <div className={styles.headerContent}>
         <a href="/">
-          <img
-            className={styles.logoImage}
-            src="/images/logo.svg"
-            alt="ig.news"
-          />
-          <img src="/images/spacetraveling.svg" alt="ig.news" />
-          <img src="/images/point.svg" alt="ig.news" />
+          <img className={styles.logoImage} src="/images/logo.svg" alt="Logo" />
+          <img src="/images/spacetraveling.svg" alt="spacetraveling" />
+          <img src="/images/point.svg" alt="." />
         </a>
       </div>
     </header>

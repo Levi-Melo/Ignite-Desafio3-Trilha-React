@@ -6,6 +6,7 @@ import Prismic from '@prismicio/client';
 import { AiOutlineUser } from 'react-icons/ai';
 import { getPrismicClient } from '../services/prismic';
 import styles from './home.module.scss';
+import { useEffect, useState } from 'react';
 
 interface Post {
   uid?: string;
@@ -27,6 +28,40 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [nextPage, setNextPage] = useState('');
+
+  useEffect(() => {
+    setPosts(postsPagination.results);
+    setNextPage(postsPagination.next_page);
+  }, [postsPagination.results, postsPagination.next_page]);
+
+  function handlePagination(): void {
+    fetch(nextPage)
+      .then(res => res.json())
+      .then(data => {
+        const formattedData = data.results.map(post => {
+          return {
+            uid: post.uid,
+            first_publication_date: new Date(
+              post.first_publication_date
+            ).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            }),
+            data: {
+              title: post.data.title,
+              subtitle: post.data.subtitle,
+              author: post.data.author,
+            },
+          };
+        });
+
+        setPosts([...posts, ...formattedData]);
+        setNextPage(data.next_page);
+      });
+  }
   return (
     <>
       <Head>
@@ -35,7 +70,7 @@ export default function Home({ postsPagination }: HomeProps) {
       <Header />
       <main className={styles.container}>
         <div className={styles.posts}>
-          {postsPagination.results.map(post => {
+          {posts.map(post => {
             return (
               <a key={post.uid} href={`post/${post.uid}`}>
                 <strong>{post.data.title}</strong>
@@ -54,7 +89,13 @@ export default function Home({ postsPagination }: HomeProps) {
             );
           })}
         </div>
-        {postsPagination.next_page ? <button>Carregar mais posts</button> : ''}
+        {postsPagination.next_page ? (
+          <button type="button" onClick={handlePagination}>
+            Carregar mais posts
+          </button>
+        ) : (
+          ''
+        )}
       </main>
     </>
   );
@@ -73,7 +114,7 @@ export const getStaticProps: GetStaticProps = async () => {
         'challengpost.content',
         'challengpost.author',
       ],
-      pageSize: 100,
+      pageSize: 1,
     }
   );
   const posts = await response.results.map((post: Post) => {
